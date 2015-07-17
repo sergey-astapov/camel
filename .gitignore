@@ -1,0 +1,13 @@
+event-handler/target
+event-handler/.idea
+event-handler/*.iml
+event-handler/event-handler-common/target
+event-handler/event-handler-common/.idea
+event-handler/event-handler-common/*.iml
+event-handler/event-handler-core/target
+event-handler/event-handler-core/.idea
+event-handler/event-handler-core/*.iml
+event-handler/event-handler-web/target
+event-handler/event-handler-web/.idea
+event-handler/event-handler-web/*.iml
+
