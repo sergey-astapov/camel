@@ -26,20 +26,20 @@ import static com.eventhandler.core.fsm.ContextState.*;
 })
 @Data
 public class ContextFsm implements StopConditionAware<ContextState, Event> {
-    String uid;
+    String runId;
     Long current;
     Long total;
     List<InterContext> events = new LinkedList<>();
 
     @OnTransit
     public void onStartContext(Idle from, Running to, StartContext event) {
-        validate(event.getUid());
+        validate(event.getRunId());
         current = 0L;
     }
 
     @OnTransit
     public void onStartContext(WaitingStart from, Running to, StartContext event) {
-        validate(event.getUid());
+        validate(event.getRunId());
         current = 0L;
         while(events.size() > 0) {
             InterContext ic = events.remove(0);
@@ -49,31 +49,31 @@ public class ContextFsm implements StopConditionAware<ContextState, Event> {
 
     @OnTransit
     public void onInterContext(Idle from, WaitingStart to, InterContext event) {
-        validate(event.getUid());
+        validate(event.getRunId());
         events.add(event);
     }
 
     @OnTransit
     public void onInterContext(Running from, Running to, InterContext event) {
-        validate(event.getUid());
+        validate(event.getRunId());
         current++;
     }
 
     @OnTransit
     public void onInterContext(WaitingLast from, WaitingLast to, InterContext event) {
-        validate(event.getUid());
+        validate(event.getRunId());
         current++;
     }
 
     @OnTransit
     public void onStopContext(Idle from, WaitingStart to, StopContext event) {
-        validate(event.getUid());
+        validate(event.getRunId());
         total = event.getTotal();
     }
 
     @OnTransit
     public void onStopContext(Running from, WaitingLast to, StopContext event) {
-        validate(event.getUid());
+        validate(event.getRunId());
         total = event.getTotal();
     }
 
@@ -82,12 +82,12 @@ public class ContextFsm implements StopConditionAware<ContextState, Event> {
         return current != null && total != null && current.equals(total);
     }
 
-    private void validate(String uid) {
-        if (this.uid == null) {
-            this.uid = uid;
+    private void validate(String runId) {
+        if (this.runId == null) {
+            this.runId = runId;
         }
-        if (!this.uid.equals(uid)) {
-            throw new IllegalArgumentException("Wrong UID, uid: " + this.uid + ", event uid: " + uid);
+        if (!this.runId.equals(runId)) {
+            throw new IllegalArgumentException("Wrong UID, runId: " + this.runId + ", event runId: " + runId);
         }
     }
 }

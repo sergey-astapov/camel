@@ -10,6 +10,6 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = false)
 @JsonTypeName("startContext")
 public class StartContext extends Event {
-    String uid;
+    String runId;
     String data;
 }

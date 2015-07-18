@@ -16,5 +16,5 @@ import java.io.Serializable;
         @JsonSubTypes.Type(value = StopContext.class, name = "stopContext")
 })
 public abstract class Event implements Serializable {
-    public abstract String getUid();
+    public abstract String getRunId();
 }

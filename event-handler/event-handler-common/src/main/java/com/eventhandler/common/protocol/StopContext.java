@@ -10,7 +10,7 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = false)
 @JsonTypeName("stopContext")
 public class StopContext extends Event {
-    String uid;
+    String runId;
     String data;
     Long total;
 }

@@ -9,4 +9,6 @@ appender("CONSOLE", ConsoleAppender) {
     }
 }
 
+logger("com.eventhandler.core.aggregate", DEBUG)
+
 root(INFO, ["CONSOLE"])

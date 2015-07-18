@@ -10,6 +10,6 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = false)
 @JsonTypeName("interContext")
 public class InterContext extends Event {
-    String uid;
+    String runId;
     String data;
 }

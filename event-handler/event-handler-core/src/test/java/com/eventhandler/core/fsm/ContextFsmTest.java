@@ -23,19 +23,19 @@ public class ContextFsmTest {
         assertTrue(fsm.getCurrentState() instanceof ContextState.Idle);
 
         fsm.fire(StartContext.builder()
-                .uid(UID)
+                .runId(UID)
                 .data(DATA)
                 .build());
         assertTrue(fsm.getCurrentState() instanceof ContextState.Running);
 
         fsm.fire(InterContext.builder()
-                .uid(UID)
+                .runId(UID)
                 .data(DATA)
                 .build());
         assertTrue(fsm.getCurrentState() instanceof ContextState.Running);
 
         fsm.fire(StopContext.builder()
-                .uid(UID)
+                .runId(UID)
                 .data(DATA)
                 .total(1L)
                 .build());
@@ -49,7 +49,7 @@ public class ContextFsmTest {
         assertTrue(fsm.getCurrentState() instanceof ContextState.Idle);
 
         fsm.fire(InterContext.builder()
-                .uid(UID)
+                .runId(UID)
                 .data(DATA)
                 .build());
         assertTrue(fsm.getCurrentState() instanceof ContextState.WaitingStart);
@@ -57,7 +57,7 @@ public class ContextFsmTest {
         assertThat(fsm.getFSM().getEvents().size(), is(1));
 
         fsm.fire(StartContext.builder()
-                .uid(UID)
+                .runId(UID)
                 .data(DATA)
                 .build());
         assertTrue(fsm.getCurrentState() instanceof ContextState.Running);
@@ -65,14 +65,14 @@ public class ContextFsmTest {
         assertThat(fsm.getFSM().getCurrent(), is(1L));
 
         fsm.fire(StopContext.builder()
-                .uid(UID)
+                .runId(UID)
                 .data(DATA)
                 .total(2L)
                 .build());
         assertTrue(fsm.getCurrentState() instanceof ContextState.WaitingLast);
 
         fsm.fire(InterContext.builder()
-                .uid(UID)
+                .runId(UID)
                 .data(DATA)
                 .build());
         assertTrue(fsm.getCurrentState() instanceof ContextState.WaitingLast);
@@ -83,11 +83,11 @@ public class ContextFsmTest {
     public void testError() {
         Yatomata<ContextFsm> fsm = new FSMBuilder<>(ContextFsm.class).build();
         fsm.fire(StartContext.builder()
-                .uid(UID)
+                .runId(UID)
                 .data(DATA)
                 .build());
         fsm.fire(InterContext.builder()
-                .uid("UID-2")
+                .runId("UID-2")
                 .build());
     }
 }
