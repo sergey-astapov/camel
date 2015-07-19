@@ -26,11 +26,5 @@
             <artifactId>hazelcast-spring</artifactId>
             <version>3.5</version>
         </dependency>
-
-        <dependency>
-            <groupId>ru.yandex.qatools</groupId>
-            <artifactId>yatomata</artifactId>
-            <version>1.7</version>
-        </dependency>
     </dependencies>
 </project>

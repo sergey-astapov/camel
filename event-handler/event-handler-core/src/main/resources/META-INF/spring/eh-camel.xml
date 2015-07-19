@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
        xmlns:c="http://www.springframework.org/schema/c"
        xmlns:camel="http://camel.apache.org/schema/spring"
        xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <bean id="aggregatorStrategy" class="com.eventhandler.core.aggregate.EventsAggregationStrategy"/>
+    <!--<bean id="aggregatorStrategy" class="com.eventhandler.core.aggregate.EventsAggregationStrategy"/>-->
+    <bean id="aggregatorStrategy" class="com.eventhandler.core.aggregate.FsmAggregationStrategy"
+          p:hz-ref="hzInstance"
+          p:timeout="20"/>
 
     <bean id="idempotentRepo" class="org.apache.camel.processor.idempotent.hazelcast.HazelcastIdempotentRepository"
             c:hazelcastInstance-ref="hzInstance"
@@ -15,7 +19,8 @@
 
     <bean id="aggregatorRepo" class="com.eventhandler.core.aggregate.HzAggregatorRepository"
             c:hazelcastInstance-ref="hzInstance"
-            c:repositoryName="aggregator"/>
+            c:repositoryName="aggregator"
+            c:timeout="20"/>
 
     <camel:camelContext>
         <camel:route>
@@ -26,12 +31,13 @@
             <camel:setHeader headerName="runId">
                 <camel:simple>${body.runId}</camel:simple>
             </camel:setHeader>
-            <camel:aggregate strategyRef="aggregatorStrategy"
-                             aggregationRepositoryRef="aggregatorRepo"
-                             completionSize="3">
+            <camel:aggregate strategyRef="aggregatorStrategy" aggregationRepositoryRef="aggregatorRepo">
                 <camel:correlationExpression>
                     <camel:header>runId</camel:header>
                 </camel:correlationExpression>
+                <camel:completionPredicate>
+                    <camel:simple>${header.currentState.isRunning} == 'true' || ${header.currentState.isStopped} == 'true'</camel:simple>
+                </camel:completionPredicate>
                 <camel:log message="Sending out ${body}"/>
                 <camel:split>
                     <camel:simple>${body}</camel:simple>
