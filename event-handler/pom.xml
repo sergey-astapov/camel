@@ -11,6 +11,7 @@
 
     <modules>
         <module>event-handler-common</module>
+        <module>event-handler-cache</module>
         <module>event-handler-core</module>
         <module>event-handler-web</module>
     </modules>

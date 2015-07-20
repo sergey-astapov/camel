@@ -3,33 +3,22 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.eventhandler</groupId>
-    <artifactId>event-handler-core</artifactId>
+    <artifactId>event-handler-cache</artifactId>
     <packaging>jar</packaging>
     <version>${parent.version}</version>
-    <name>event-handler-core</name>
+    <name>event-handler-cache</name>
 
     <parent>
         <groupId>com.eventhandler</groupId>
         <artifactId>event-handler-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.eventhandler</groupId>
-            <artifactId>event-handler-common</artifactId>
-            <version>${parent.version}</version>
-        </dependency>
-
+	
+	<dependencies>
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast-spring</artifactId>
-            <version>${hazelcast.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast-client</artifactId>
-            <version>${hazelcast.version}</version>
+            <version>3.5</version>
         </dependency>
     </dependencies>
 </project>
