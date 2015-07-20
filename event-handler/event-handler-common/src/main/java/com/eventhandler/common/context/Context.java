@@ -5,9 +5,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Wither;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 
+@Slf4j
 @Value
 @Builder
 public class Context implements Serializable {
@@ -25,10 +27,18 @@ public class Context implements Serializable {
     ContextState state;
 
     public boolean isRunning() {
-        return !isStopped() && (state instanceof ContextState.Running || state instanceof ContextState.Stopping);
+        boolean run = !isStopped() && (state instanceof ContextState.Running || state instanceof ContextState.Stopping);
+        log.debug("Check context is running, runId: {}, running: {}", runId, run);
+        return run;
     }
 
     public boolean isStopped() {
-        return current != null && current.equals(total);
+        boolean stop = current != null && current.equals(total);
+        log.debug("Check context stopped, runId: {}, stopped: {}", runId, stop);
+        return stop;
+    }
+
+    public boolean isReadyForProcess() {
+        return isRunning() || isStopped();
     }
 }

@@ -36,14 +36,19 @@
                     <camel:header>runId</camel:header>
                 </camel:correlationExpression>
                 <camel:completionPredicate>
-                    <camel:simple>${header.currentState.isRunning} == 'true' || ${header.currentState.isStopped} == 'true'</camel:simple>
+                    <camel:simple>${in.header.context.isReadyForProcess} == 'true'</camel:simple>
                 </camel:completionPredicate>
-                <camel:log message="Sending out ${body}"/>
-                <camel:split>
-                    <camel:simple>${body}</camel:simple>
-                    <camel:to uri="direct:idempotent"/>
-                </camel:split>
+                <camel:to uri="direct:aggregated"/>
             </camel:aggregate>
+        </camel:route>
+
+        <camel:route>
+            <camel:from uri="direct:aggregated"/>
+            <camel:log message="Sending aggregated message: ${body}"/>
+            <camel:split>
+                <camel:simple>${body}</camel:simple>
+                <camel:to uri="direct:idempotent"/>
+            </camel:split>
         </camel:route>
 
         <camel:route>

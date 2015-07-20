@@ -14,6 +14,7 @@ import ru.yandex.qatools.fsm.impl.YatomataImpl;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Data
@@ -26,13 +27,13 @@ public class FsmAggregationStrategy implements AggregationStrategy {
         if (oldExchange == null) {
             List<Event> events = new LinkedList<>();
             events.add(e);
-            newExchange.getIn().setHeader("contextState", transformContext(e));
+            newExchange.getIn().setHeader("context", transformContext(e));
             newExchange.getIn().setBody(events);
             return newExchange;
         }
         List<Event> events = oldExchange.getIn().getBody(List.class);
         events.add(e);
-        oldExchange.getIn().setHeader("contextState", transformContext(e));
+        oldExchange.getIn().setHeader("context", transformContext(e));
         return oldExchange;
     }
 
@@ -43,7 +44,7 @@ public class FsmAggregationStrategy implements AggregationStrategy {
         Context old = null;
         Context context = null;
         try {
-            //map.tryLock(runId, timeout, TimeUnit.SECONDS);
+            map.tryLock(runId, timeout, TimeUnit.SECONDS);
             if (!map.containsKey(runId)) {
                 map.put(runId, Context.builder()
                         .runId(runId)
@@ -60,7 +61,7 @@ public class FsmAggregationStrategy implements AggregationStrategy {
         } catch (Exception err) {
             log.error("Failed to add new exchange", err);
         } finally {
-            //map.unlock(runId);
+            map.unlock(runId);
         }
 
         log.info("Context, runId: {}, old: {}, new: {}", new Object[] {runId, old, context});
