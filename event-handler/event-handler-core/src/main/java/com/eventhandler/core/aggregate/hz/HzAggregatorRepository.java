@@ -1,4 +1,4 @@
-package com.eventhandler.core.aggregate;
+package com.eventhandler.core.aggregate.hz;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;

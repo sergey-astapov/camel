@@ -12,4 +12,9 @@ import lombok.*;
 public class InterContext extends Event {
     String runId;
     String data;
+    String reference;
+
+    public String getIdempotentId() {
+        return String.valueOf(runId) + String.valueOf(reference) + getClass().getName();
+    }
 }

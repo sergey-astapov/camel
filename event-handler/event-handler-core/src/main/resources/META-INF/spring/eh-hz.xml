@@ -1,6 +1,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
        xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring.xsd">
@@ -25,4 +27,17 @@
 
         </hz:network>
     </hz:client>
+
+    <bean id="aggregatorStrategy" class="com.eventhandler.core.aggregate.hz.HzAggregationStrategy"
+          p:hz-ref="hzInstance"
+          p:timeout="20"/>
+
+    <bean id="idempotentRepo" class="org.apache.camel.processor.idempotent.hazelcast.HazelcastIdempotentRepository"
+          c:hazelcastInstance-ref="hzInstance"
+          c:repositoryName="idempotent"/>
+
+    <bean id="aggregatorRepo" class="com.eventhandler.core.aggregate.hz.HzAggregatorRepository"
+          c:hazelcastInstance-ref="hzInstance"
+          c:repositoryName="aggregator"
+          c:timeout="20"/>
 </beans>

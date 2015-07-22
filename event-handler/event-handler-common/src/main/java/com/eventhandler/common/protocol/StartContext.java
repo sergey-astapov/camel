@@ -12,4 +12,8 @@ import lombok.*;
 public class StartContext extends Event {
     String runId;
     String data;
+
+    public String getIdempotentId() {
+        return String.valueOf(runId) + getClass().getName();
+    }
 }

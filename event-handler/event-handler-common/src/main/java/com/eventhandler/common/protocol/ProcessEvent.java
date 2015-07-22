@@ -1,6 +1,5 @@
 package com.eventhandler.common.protocol;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.*;
 
 @Data
@@ -8,13 +7,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@JsonTypeName("stopContext")
-public class StopContext extends Event {
+public class ProcessEvent extends Event {
     String runId;
-    String data;
-    Long total;
+    String reference;
+    String status;
 
     public String getIdempotentId() {
-        return String.valueOf(runId) + getClass().getName();
+        return String.valueOf(runId) + String.valueOf(reference) + getClass().getName();
     }
 }

@@ -13,7 +13,4 @@ public abstract class ContextState implements Serializable {
 
     @EqualsAndHashCode(callSuper = false)
     public static class Running extends ContextState {}
-
-    @EqualsAndHashCode(callSuper = false)
-    public static class Stopping extends ContextState {}
 }

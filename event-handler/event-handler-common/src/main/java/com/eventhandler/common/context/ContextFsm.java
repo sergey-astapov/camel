@@ -1,15 +1,15 @@
 package com.eventhandler.common.context;
 
-import com.eventhandler.common.protocol.Event;
-import com.eventhandler.common.protocol.InterContext;
-import com.eventhandler.common.protocol.StartContext;
-import com.eventhandler.common.protocol.StopContext;
+import com.eventhandler.common.protocol.*;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.qatools.fsm.StopConditionAware;
 import ru.yandex.qatools.fsm.annotations.FSM;
 import ru.yandex.qatools.fsm.annotations.OnTransit;
 import ru.yandex.qatools.fsm.annotations.Transit;
 import ru.yandex.qatools.fsm.annotations.Transitions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.eventhandler.common.context.ContextState.*;
 
@@ -18,9 +18,7 @@ import static com.eventhandler.common.context.ContextState.*;
 @Transitions({
         @Transit(from = {Idle.class, Starting.class}, on = StartContext.class, to = Running.class),
         @Transit(from = {Idle.class, Starting.class}, on = {InterContext.class, StopContext.class}, to = Starting.class),
-        @Transit(from = Running.class, on = InterContext.class, to = Running.class),
-        @Transit(from = Running.class, on = StopContext.class, to = Stopping.class),
-        @Transit(from = Stopping.class, on = InterContext.class, to = Stopping.class),
+        @Transit(from = Running.class, on = {InterContext.class, StopContext.class, ProcessEvent.class}, to = Running.class),
 })
 public class ContextFsm implements StopConditionAware<ContextState, Event> {
     private Context context;
@@ -38,7 +36,7 @@ public class ContextFsm implements StopConditionAware<ContextState, Event> {
         validate(event.getRunId());
         updateContext(Context.builder()
                 .runId(event.getRunId())
-                .current(0L)
+                .received(0L)
                 .state(to)
                 .build());
     }
@@ -48,7 +46,7 @@ public class ContextFsm implements StopConditionAware<ContextState, Event> {
         validate(event.getRunId());
         updateContext(Context.builder()
                 .runId(event.getRunId())
-                .current(0L)
+                .received(0L)
                 .waiting(1L)
                 .state(to)
                 .build());
@@ -59,7 +57,7 @@ public class ContextFsm implements StopConditionAware<ContextState, Event> {
         validate(event.getRunId());
         updateContext(Context.builder()
                 .runId(event.getRunId())
-                .current(0L)
+                .received(0L)
                 .waiting(0L)
                 .total(event.getTotal())
                 .state(to)
@@ -69,7 +67,7 @@ public class ContextFsm implements StopConditionAware<ContextState, Event> {
     @OnTransit
     public void onInterContext(Running from, Running to, InterContext event) {
         validate(event.getRunId());
-        updateContext(context.withCurrent(context.getCurrent() + 1));
+        updateContext(context.withReceived(context.getReceived() + 1));
     }
 
     @OnTransit
@@ -77,7 +75,7 @@ public class ContextFsm implements StopConditionAware<ContextState, Event> {
         validate(event.getRunId());
         updateContext(Context.builder()
                 .runId(event.getRunId())
-                .current(context.getWaiting())
+                .received(context.getWaiting())
                 .waiting(0L)
                 .total(context.getTotal())
                 .state(to)
@@ -97,29 +95,29 @@ public class ContextFsm implements StopConditionAware<ContextState, Event> {
     }
 
     @OnTransit
-    public void onStopContext(Running from, Stopping to, StopContext event) {
+    public void onStopContext(Running from, Running to, StopContext event) {
         validate(event.getRunId());
-        updateContext(Context.builder()
-                .runId(event.getRunId())
-                .current(context.getCurrent())
-                .total(event.getTotal())
-                .state(to)
-                .build());
+        updateContext(context.withTotal(event.getTotal()));
     }
 
     @OnTransit
-    public void onInterContext(Stopping from, Stopping to, InterContext event) {
+    public void onProcessedEvent(Running from, Running to, ProcessEvent event) {
         validate(event.getRunId());
-        updateContext(context.withCurrent(context.getCurrent() + 1));
+        Map<String, String> res = context.getResults();
+        if (res == null) {
+            res = new HashMap<>();
+        }
+        res.put(event.getReference(), event.getStatus());
+        updateContext(context.withResults(res));
     }
 
     @Override
     public boolean isStopRequired(ContextState state, Event event){
-        return this.context.isStopped();
+        return this.context.isAllProcessed();
     }
 
     private void updateContext(Context newContext) {
-        log.debug("updateContext, oldContext: {}, newContext: {}", context, newContext);
+        log.debug("updateContext,\noldContext: {},\nnewContext: {}", context, newContext);
         context = newContext;
     }
 

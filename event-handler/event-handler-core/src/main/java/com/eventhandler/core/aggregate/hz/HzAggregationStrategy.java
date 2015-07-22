@@ -1,43 +1,38 @@
-package com.eventhandler.core.aggregate;
+package com.eventhandler.core.aggregate.hz;
 
 import com.eventhandler.common.context.Context;
 import com.eventhandler.common.context.ContextFsm;
 import com.eventhandler.common.context.ContextState;
 import com.eventhandler.common.protocol.Event;
+import com.eventhandler.common.protocol.StartContext;
+import com.eventhandler.core.aggregate.AbstractAggregationStrategy;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.camel.Exchange;
-import org.apache.camel.processor.aggregate.AggregationStrategy;
+import ru.yandex.qatools.fsm.annotations.AfterTransit;
 import ru.yandex.qatools.fsm.impl.YatomataImpl;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Data
-public class FsmAggregationStrategy implements AggregationStrategy {
+public class HzAggregationStrategy extends AbstractAggregationStrategy {
     HazelcastInstance hz;
     long timeout;
 
-    public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-        Event e = newExchange.getIn().getBody(Event.class);
-        if (oldExchange == null) {
-            List<Event> events = new LinkedList<>();
-            events.add(e);
-            newExchange.getIn().setHeader("context", transformContext(e));
-            newExchange.getIn().setBody(events);
-            return newExchange;
+    public class ContextFsm2 extends ContextFsm {
+        public ContextFsm2(Context state) {
+            super(state);
         }
-        List<Event> events = oldExchange.getIn().getBody(List.class);
-        events.add(e);
-        oldExchange.getIn().setHeader("context", transformContext(e));
-        return oldExchange;
+        @AfterTransit
+        public void afterTransit(ContextState.Running state, StartContext event) {
+            log.debug("afterTransit: {}, {}", state, event);
+        }
     }
 
-    private Context transformContext(Event e) {
+    @Override
+    protected Context transformContext(Event e) {
         IMap<String, Context> map = hz.getMap("contexts");
         String runId = e.getRunId();
 
@@ -48,13 +43,12 @@ public class FsmAggregationStrategy implements AggregationStrategy {
             if (!map.containsKey(runId)) {
                 map.put(runId, Context.builder()
                         .runId(runId)
-                        .current(0L)
+                        .received(0L)
                         .state(new ContextState.Idle())
                         .build());
             }
             old = map.get(runId);
-            YatomataImpl<ContextFsm> engine = new YatomataImpl<>(ContextFsm.class, new ContextFsm(old),
-                    old.getState());
+            YatomataImpl<ContextFsm2> engine = new YatomataImpl<>(ContextFsm2.class, new ContextFsm2(old), old.getState());
             engine.fire(e);
             context = engine.getFSM().getContext();
             map.put(runId, context);
