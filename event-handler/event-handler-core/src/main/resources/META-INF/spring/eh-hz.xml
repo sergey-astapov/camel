@@ -31,6 +31,9 @@
     <bean id="aggregatorStrategy" class="com.eventhandler.core.aggregate.hz.HzAggregationStrategy"
           p:hz-ref="hzInstance"
           p:timeout="20"/>
+    <bean id="stopAggregatorStrategy" class="com.eventhandler.core.aggregate.hz.HzAggregationStrategy2"
+          p:hz-ref="hzInstance"
+          p:timeout="20"/>
 
     <bean id="idempotentRepo" class="org.apache.camel.processor.idempotent.hazelcast.HazelcastIdempotentRepository"
           c:hazelcastInstance-ref="hzInstance"
